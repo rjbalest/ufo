@@ -1,0 +1,27 @@
+<ufo>
+<class name="campaign" oid="primary" container="campaigns">
+<!-- This will generate a column in the DB -->
+
+<var name="status" label="Status" type="int" default="0" constraint="campaign_status.id">Status</var>
+<var name="clicks" label="Clicks" type="int" default="0">Clicks</var>
+<var name="impressions" label="Impressions" type="int" default="0">Impressions</var>
+<var name="ctr" label="Ctr" type="float" default="0">CTR</var>
+<var name="avg_cpc" label="AvgCPC" type="float" default="0.0">AvgCPC</var>
+<var name="cost" label="Cost" type="float" default="0.0">Cost</var>
+
+<!-- Used by create new campaign wizard to name -->
+<facet name="rename">
+<var name="name" label="Name" type="string">Name</var>
+<var name="description" label="Description" type="string" default="Unknown">Description</var>
+<var name="budget" label="Budget" type="float" default="0.0">Budget</var>
+</facet>
+
+<!-- Used by create new campaign wizard to add items -->
+<facet name="items">
+<reference>
+<container type="campaign_items">campaign_items</container>
+</reference>
+</facet>
+
+</class>
+</ufo>

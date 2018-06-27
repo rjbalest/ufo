@@ -1,0 +1,31 @@
+
+The security model is simple and purely role based.
+That is to say there is no concept of a privilege, outside those that are
+implied by a role.
+
+The roles that are currently supported are:
+(14:34:51) Ron Trenka: 1) Telephone sales rep:  Can only offer pre-determined packages.  (defined in admin)
+(14:38:20) Ron Trenka: 2) Account Executives: regular salesmen, but have a cap on how much they can sell for a single buy (can be overridden via management)
+(14:38:37) Ron Trenka: 3) Senior Account Executives: Same as #2 with no cap
+(14:39:04) Ron Trenka: 4) Admin or Management: Has access to the admin area and can override any settings
+(14:39:22) Ron Trenka: 5) Bookkeeper / Accountants: Access to financial reporting stuff
+(14:39:44) russellbalest@jabber.sitepen.com/Gaim: is there no access to customers - advertisers or content publishers ?
+(14:39:52) Ron Trenka: we should probably confirm that tho, they keep changing their minds every time we talk to them.
+(14:39:55) Ron Trenka: oh yes.
+(14:40:11) Ron Trenka: Customers have access to their reports.
+(14:41:06) russellbalest@jabber.sitepen.com/Gaim: ok, that gives me some idea
+(14:41:18) Ron Trenka: content publishers is a bit up in the air.
+
+Every Class in the system that can be viewed has a list of roles that are allowed to view that class.  i.e. call the 'view' method.
+
+Every method of these Classes has a list of roles that is allowed to call the method.  By default, all methods are private in the sense that they may not be called (over http). 
+
+Every 'Page', being a class, follows the same rule.
+
+Pages and Classes that may be viewed or called must be declared in the table ufo_pagelayout.  This table declares every page, the navigation elements that should be displayed on that page, the roles that can view this page, the class that comprises the body of the page ( usually the page class itself ), and a redirect page that should be called should this page be requested by a user with an insufficient role.
+
+There is little distintion between a Page and a Class or a Page and an Object, except in the context of the URL mapping.  Recall that the URL semantics, in words are:  'Call a method on an object and then view a page'.  This actually should be stated:  'Call a method on an object and then view an object'.  The 2nd object, the one viewed, may or may not be the same object whose method was called.  To distinguish these 2 potentially different objects, the keywords 'obj', and 'page' are used to refer to the called object and the viewed object respectively.
+The reason the keyword 'page' was chosen for the viewed object is that the 'view' method is implicitly called on this object, and the return value from 'view' is typically a web page.
+
+The proposed list of roles is currently:
+( 'sales_rep', 'account_exec', 'sr_account_exec', 'admin', 'accountant', 'customer' )

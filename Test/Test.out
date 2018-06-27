@@ -1,0 +1,4 @@
+Here is the replacement text for @FOO(1,2,3)@:  456
+@FOO(1,2,3)@:  456 ( to test @@@ at beginning of line. )
+456 ( to test @ at beginning of line )
+@456 ( to test @ preceded by @@@ at beginning of line )

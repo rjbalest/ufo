@@ -1,0 +1,11 @@
+Changelog
+
+v0.4 - 2006-01-08
+
+	Todd DeLuca pointed out that keys are serialized differently than
+	values by PHP, and that strings that look like integers are serialized
+	as integers.
+	
+	Ken Restivo pointed out that it'd be nice to be able to decode the
+	output from PHP's session_encode.  With helpful code and suggestions
+	from Ken, i've implemented session_encode and session_decode.

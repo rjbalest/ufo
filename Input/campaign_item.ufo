@@ -1,0 +1,15 @@
+<ufo>
+<class name="campaign_item" oid="primary" owner="campaign" container="campaign_items">
+<!-- This will generate a column in the DB -->
+<var name="campaign_id" type="int" constraint ="campaign.id">CampaignId</var>
+<var name="product_id" type="int" constraint="product.id">ProductId</var>
+<var name="bid" type="float">Bid</var>
+<var name="status" type="int" constraint="campaign_item_status.id">Status</var>
+<var name="destination" type="string">Destination</var>
+<var name="clicks" type="int">Clicks</var>
+<var name="impressions" type="int">Impressions</var>
+<var name="ctr" type="float">CTR</var>
+<var name="avg_cpc" type="float">AverageCPC</var>
+<var name="cost" type="float">Cost</var>
+</class>
+</ufo>

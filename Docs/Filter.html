@@ -1,0 +1,320 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-1">
+  <title>Filter: A Textual Substitution System.</title>
+</head>
+<body>
+<br>
+<h1>Filter: a tag-based textual replacement system.</h1>
+<span style="font-weight: bold;">Author: Russell Balest<br>
+E-mail: russell@balest.com<br>
+Copyright (C) 2004 Russell Balest<br>
+<br>
+</span>
+<hr style="width: 100%; height: 2px;"><span style="font-weight: bold;"></span><br>
+Generically referred to as 'Filter', this is a system for managing
+textual substitutions.&nbsp; The main function of Filter is to replace <span
+ style="font-style: italic;">tags</span> of the form @TAGNAME@ with
+some substitution text.&nbsp; This version of Filter is written in
+Python and while simple usage requires no knowledge of Python, more
+advanced usage does require Python programming.&nbsp; The main use of
+Filter has been, for me, in generating large amounts of code based on
+templates, in order to implement declarative systems.&nbsp; I also use
+it for installation and configuration automation.<br>
+<br>
+The original version was written by myself in 1997 using the Tcl
+programming language.&nbsp; In 2002 I ported it to Python.<br>
+&nbsp; <br>
+<h2>Simple Usage<br>
+</h2>
+<br>
+Filter comes with a simple implementation of a program to read a file
+containing tags, and output the file with tags replaced with their
+associated replacement text.<br>
+This program is called config.py and the usage is:<br>
+<span style="font-weight: bold;">config.py &lt;tagdefs&gt;
+&lt;infile&gt; &lt;outfile&gt;</span><br>
+<br>
+where:<br>
+&lt;tagdefs&gt; is a file containing tag names and their substitution
+text separated by a tab character, such as:<br>
+<br>
+mytagfile:<br>
+-------------<br>
+HOST &nbsp;&nbsp; 127.0.0.1<br>
+PORT &nbsp;&nbsp; 25<br>
+USER &nbsp; foo<br>
+---------------<br>
+<br>
+&lt;infile&gt; is an input file, which I usually refer to as a
+template, containing tags which have been defined in &lt;tagdefs&gt;,
+such as:<br>
+<br>
+rls.T:<br>
+-----------<br>
+#!/bin/bash<br>
+<br>
+ssh -p @PORT@ -l @USER@ @HOST@ ls<br>
+<br>
+------------<br>
+<br>
+&lt;outfile&gt; is the name of the output after tag replacement has
+occurred.&nbsp; For this example, the output file would be:<br>
+<br>
+rls:<br>
+-------------<br>
+#!/bin/bash<br>
+<br>
+ssh -p 22 -l foo 127.0.0.1 ls<br>
+<br>
+------------<br>
+<br>
+The above example files correspond to running the following command:<br>
+<span style="font-weight: bold;">config.py mytagdefs rls.T rls<br>
+<span style="font-weight: bold;"></span><br>
+</span>Note, there is no relation between the names rls.T and rls
+except for the convention I often use that files containing tags end
+with the suffix .T (for Template).<br>
+<br>
+<h2>The Filter module<br>
+</h2>
+In order to use the Filter system in more interesting ways, it is
+necessary to introduce Python programming.&nbsp; All of the Filter
+classes are contained in the Filter module.&nbsp; The two main classes
+are called Context and Parser.&nbsp; These classes are imported with:<br>
+<span style="font-weight: bold;">import Filter</span><br>
+<br>
+and constructed with:<br>
+<span style="font-weight: bold;">ctx = Filter.Context()</span><br>
+and:<br>
+<span style="font-weight: bold;">parser = Filter.Parser()<span
+ style="font-weight: bold;"></span><br>
+</span>
+<h2>The Context class<br>
+</h2>
+The most important class to understand is the Context class.&nbsp; A
+Context object holds the definitions of tags.&nbsp; The Context class
+has three basic methods and some attributes that control its
+behavior.&nbsp; <br>
+<br>
+The methods are:<br>
+<br>
+<span style="font-weight: bold;">def replace(self, tag):</span>&nbsp;&nbsp;
+<br>
+# Given a tag return its replacement text.<br>
+<br>
+<span style="font-weight: bold;">def tagDefine(self, tag, replacement):</span><br>
+# Define a tag and its replacement text.<br>
+<br>
+<span style="font-weight: bold;">def loadTagDefs(self, tagfile):</span><br>
+# Given a file of tag names and definitions, load them and define them.<br>
+<br>
+The attributes are:<br>
+<br>
+<span style="font-weight: bold;">ALLOW_UNKNOWN_TAGS = False</span><br>
+# If True, silently ignore when an an undefined tag is encountered by
+replace.<br>
+<br>
+<span style="font-weight: bold;">ALLOW_TAG_OVERRIDES = False</span><br>
+# If set to True, allow tags to be multiply defined and use the last
+definition encountered.<br>
+<br>
+<h2>The Parser class</h2>
+The Parser class works in conjunction with a Context object to parse
+input for tags and replace these tags.<br>
+The Parser works in a <span style="font-style: italic;">super-recursive</span>
+manner, so that tag definitions may include new tags, ad
+infinitum.&nbsp; The Parser class has three methods:<br>
+<br>
+<span style="font-weight: bold;">def parse( self, infile, context ):</span><br>
+# Given a filename and a Context object, parse the file and return the
+result as a string.<br>
+<br>
+<span style="font-weight: bold;">def parse( self, infile, outfile,
+context ):</span><br>
+# Given a filename, an output filename, and a Context object, parse the
+file and write output to outfile.<br>
+<br>
+<span style="font-weight: bold;">def parseLine( self, line, context ):</span><br>
+# Given a line of input and a Context object, parse the line and return
+the result as a string.<br>
+<br>
+<h2>Tag name specification</h2>
+The most general semantic notion of a tag can be viewed as a scoped
+function call:<br>
+<span style="font-weight: bold;">&lt;namespace&gt;.&lt;tag&gt;(
+&lt;parameter&gt; )</span><br style="font-weight: bold;">
+<br>
+Tag names are specified by a Python regular expression
+found in the Filter module and defined by the variable:<br>
+<br>
+<span style="font-weight: bold;">Filter.rex<br>
+</span>see the source code in Filter.py for the actual regular
+expression definition.<span style="font-weight: bold;"><br>
+<br>
+</span>Examples of simple valid tag names are:<br>
+<span style="font-weight: bold;">@HOST9@</span><br
+ style="font-weight: bold;">
+<span style="font-weight: bold;">@_Bob7@</span><br
+ style="font-weight: bold;">
+<span style="font-weight: bold;">@B33-C47@<br>
+<br>
+</span>Tag names must begin with letters or an underscore, and may
+additionally contain numbers, hyphens, and parantheses.<br>
+Characters in tag names are not interpreted in any special way, with
+two exceptions: the period and parentheses.<br>
+<br>
+The period is used to separate a simple tag name from its containing
+named Context.&nbsp; Contexts may be nested inside each other and the
+function of the period is to locate that Context and define the tag
+locally.&nbsp; <br>
+<br>
+Valid examples of scoped tag names are:<br>
+<span style="font-weight: bold;">@GLOBAL.hostname@</span><br
+ style="font-weight: bold;">
+<span style="font-weight: bold;">@LOCAL.77.service@</span><br
+ style="font-weight: bold;">
+<span style="font-weight: bold;">@_.port()@</span><br>
+<br>
+Parantheses are used to parameterize tags.<br>
+<br>
+Valid examples of tag names with parameters are:<br>
+<span style="font-weight: bold;">@GLOBAL.hostip(mydomain.com)@</span><br
+ style="font-weight: bold;">
+<span style="font-weight: bold;">@HTML.include(somefile.html, True)@</span><br
+ style="font-weight: bold;">
+<span style="font-weight: bold;">@_.port()@</span><br>
+<h2>Tag definition specification</h2>
+Tag definitions are specified by the following Python regular
+expression found in the Filter module:<br>
+<br>
+<span style="font-weight: bold;">'^([_\.a-zA-Z0-9]\.)?([_a-zA-Z]+[()_0-9a-zA-Z
+\-]*)[\t]+(.*)\$'</span><br>
+<br>
+Because tags need to expand to potentially arbitrary text, the idea of
+having a regular expression seems too restrictive.&nbsp; However, the
+typical application I use Filter for is generating source code, thus I
+have tailored the above expression to include the characters in
+languages I typically use.&nbsp; You may replace this expression for
+your own use.<br>
+<br>
+It is important to note that tag defintions may contain tags
+themselves.&nbsp; Even though the '@' symbol is not contained above, it
+is actually allowed when it occurs twice as a new tag.<br>
+<br>
+<h2>The '@' symbol</h2>
+In order to disambiguate the presence of a literal '@' in a tag
+definition from the start of a new tag, it is advisable to use the
+special string '@@@' to represent a literal '@'.&nbsp; At times, it may
+work to use only a single '@', but this behavior is accidental as it
+depends on what characters follow.<br>
+<br>
+<h2>More about the Context class <br>
+</h2>
+There is actually more to the Context class than I revealed
+above.&nbsp; The first point is that Context objects may be named and
+nested inside each other hierarchically.&nbsp; The second point is that
+the Context class searches its methods for suitable replacement <span
+ style="font-style: italic;">functions</span>.&nbsp; In order to take
+advantage of this second behavior, it is necessary to subclass Context.<br>
+<br>
+<h3>Inheriting from the Context class<br>
+</h3>
+By subclassing the Context, one can create specialized Context classes
+that define <span style="font-style: italic;">methods</span> for tag
+definitions.&nbsp; This is a very convenient and powerful way to
+generate arbitrary replacement text.&nbsp; The reason for this is that
+the derived Context can contain additional state which allows for more
+flexible and dynamic code generation than can be achieved with static
+replacement text.&nbsp; <br>
+<br>
+The algorithm used by the Context class to locate a tag definition is
+as follows:<br>
+1. Search the Context methods for a method matching the name of the tag.<br>
+2. Search the static tag definitions that may have been defined or
+imported from a file.<br>
+<br>
+Thus, any method tag definitions will take precedence over static
+definitions of a tag.<br>
+<br>
+The following is an example Python class that subclasses the Context
+class and adds a single tag definition method:<br>
+<br>
+<span style="font-weight: bold;">class PHPContext ( Filter.Context ):</span><br
+ style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+def __init__(self, atts=None):</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Filter.Context.__init__(self)</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+self.tagDefine('CLASSNAME', atts.className)</span><br
+ style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+self.tagDefine('PREFIX', atts.prefix)</span><br
+ style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+self.vars = atts.vars</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+self.className = atts.className</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+self.table_prefix = atts.prefix</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+self.oid = atts.oid</span><br style="font-weight: bold;">
+<br style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+def ATTRIBUTES(self):</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+c = ""</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+c = c + "var $%s;\n\t" % 'oid'</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+for v in self.vars:</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+c = c + "var $%s;\n\t" % v.name</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return c<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; def IMPORT(self, filename):<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+return slurp(filename)<br>
+</span><br>
+The ATTRIBUTES method will generate code to replace the tag
+@ATTRIBUTES@ in some template.<br>
+Tag definition methods do not have to be capitalized.&nbsp; This is
+just a convention that I use typically.<br>
+A specialized Context such as the PHPContext above, only makes sense in
+conjunction with some specialized templates to go along with it.&nbsp;
+In this case, I happen to be generating PHP classes that output HTML
+forms and associated SQL statements (not shown here).<br>
+<br>
+The IMPORT method will return replacement text for the tag
+@IMPORT(myfilename)@ for example.&nbsp; Note that this tag requires one
+argument and will read the named file and return its contents as the
+replacement text.<br>
+<h2>Nested Contexts</h2>
+There are three additional methods not previously mentioned with the
+Context class, related to nesting:<br>
+<br>
+<span style="font-weight: bold;">def getParent(self):</span><br>
+# Get the parent Context object.<br>
+<br>
+<span style="font-weight: bold;">def getContext(self, name):</span><br>
+# Get the child Context with the given name.<br>
+<br>
+<span style="font-weight: bold;">def addContext(self, context):</span><br>
+# Add the given Context as a child of self.<br>
+<br>
+In addition there are 2 optional constructor arguments related to
+nesting.&nbsp; <br>
+The constructor specification is:<span style="font-weight: bold;"><br>
+def __init__(self, name='.', parent=None):<br>
+</span># Create a Context with the given name and parent Context object.<br>
+<br>
+To be quite honest, I have not yet created an application that uses
+nested contexts.<br>
+<br>
+<br>
+</body>
+</html>

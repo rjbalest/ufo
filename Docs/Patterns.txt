@@ -1,0 +1,211 @@
+The purpose of this file is to enumerate all of the object relationship patterns expressible in the ufo schema and give examples.
+
+I.  Terminal Class Level I
+    This is a class whose attributes are all basic built-in types like string, integer, bool, and real.  The containing object for all objects of this class are the current session user, thus the designation 'Level I'.
+
+    Example of this is a user alias.  One can imagine a class with a single string attribute, called alias.
+
+    class ufo_alias {
+	  var $alias;
+	  ...
+    }
+
+    This is very simple to map to a database table with 3 columns:
+
+    table ufo_alias {
+      id integer auto increment,
+      uid integer,
+      alias text
+    }
+
+    It is trivial to automate the source classes, and persistence operations
+for this type of class.  This class can be declared in a language independent way within the ufo schema with something simple like:
+
+<ufo>
+<class name="alias">
+<var>alias</var>
+</class>
+</ufo>
+
+A simple declaration like this will literally produce hundreds of lines of source code related to construction, initialization, persistence, access rules, etc.
+
+II. Transient Container Class Level I 
+    This is a class that has no attributes of its own aside from a sequence of type I objects.  The containing object for all objects of this class are the current session user, thus the designation 'Level I'.
+
+    Example of this is follows from the user alias class.
+
+    class ufo_aliases {
+	  var $alias = array();
+	  ...
+    }
+
+    There is no database table for this class, hence the transient designation.
+
+    It is trivial to automate the source classes for this type of class.  This class can be declared in a language independent way within the ufo schema by augmenting the declaration in type I with:
+
+<ufo>
+<class name="alias" container="aliases">
+<var>alias</var>
+</class>
+</ufo>
+
+Construction of this class will simply utilize the session user id to find all rows in the ufo_alias table owned by that user, to fill its array.
+
+The default view method for this class by default will iterate over all alias objects and display each as a row in table.
+
+
+III.  Non-Terminal Class Reference Level I
+    This is a class whose attributes may include classes in addition to the built-in types.  The containing object for all objects of this class are still the current session user, thus the designation 'Level I'.
+    This is where things start to get complicated.  The contained object may be thought of as an intrinsic element of the containing class or alternatively, it may be thought of as being referenced by the containing class.  In this case, Level 1, the object is referenced by the containing class, and not owned by it.
+    In either case, the contained object, or objects, will have their own class definition and associated database table.  The way in which the objects are linked will be different.  When an object or objects are intrinsically 'owned' by a container, this becomes a level 2 object, covered below.
+
+    Example of this is a user profile.  One can imagine a class with a single string attribute, called name, and an object attribute called address, where address is itself a class.
+   
+    class ufo_address {   /* Type I object */
+          var $street;
+	  var $state;
+	  var $zipcode;
+          ...
+    }
+
+    class ufo_profile {  /* Type 3 object */
+	  var $name;
+	  var $address;  /* Type 1 object */
+	  ...
+    }
+
+    The mapping to database tables is currently:
+
+    table ufo_address {
+      id integer auto increment,
+      uid integer,
+      street text,
+      state text,
+      zipcode text
+    }
+
+    table ufo_profile {
+      id integer auto increment,
+      uid integer,
+      name text,
+      address integer
+    }
+
+    The meaning of the address column in the ufo_profile table is a reference to the id of the ufo_address object.
+
+    It is trivial to automate the source classes, and persistence operations
+for this type of class.  This class can be declared in a language independent way within the ufo schema with something simple like:
+
+<ufo>
+<class name="profile">
+<var>name</var>
+<reference>
+<var type="object">address</var>
+</reference>
+</class>
+</ufo>
+
+
+IV.  Non-Terminal collection of Class Level I
+    This is a relatively simple extension of type III.  In this case the contained object is now a contained collection of objects.
+    Example of this is a user profile.  One can imagine a class with a single string attribute, called name, and a collection of object attributes called address, where address is itself is an array of objects, perhaps, primary and alternate addresses.
+   
+    class ufo_address {   /* Type I object */
+          var $street;
+	  var $state;
+	  var $zipcode;
+          ...
+    }
+
+    class ufo_profile {  /* Type 3 object */
+	  var $name;
+	  var $address = array();  /* Collection of Type 1 object */
+	  ...
+    }
+
+    The mapping to database tables is currently:
+
+    table ufo_address {
+      id integer auto increment,
+      uid integer,
+      street text,
+      state text,
+      zipcode text
+    }
+
+    table ufo_profile {
+      id integer auto increment,
+      uid integer,
+      name text,
+      address set(integer)
+    }
+
+    The meaning of the address column in the ufo_profile table is a reference to a set of id's of ufo_address objects.
+
+    It is trivial to automate the source classes, and persistence operations
+for this type of class.  This class can be declared in a language independent way within the ufo schema with something simple like:
+
+<ufo>
+<class name="profile">
+<var>name</var>
+<reference>
+<collection>
+<var type="object">address</var>
+</collection>
+</reference>
+</class>
+</ufo>
+
+V.  Non-Terminal collection of Class Level II
+    This is a relatively simple extension of type IV.  In this case the contained objects are now owned by the container instead of the session user.
+    Example of this is a user profile.  One can imagine a class with a single string attribute, called name, and a collection of object attributes called address, where address is itself is an array of objects, perhaps, primary and alternate addresses.
+   
+    class ufo_address {   /* Type I object */
+          var $street;
+	  var $state;
+	  var $zipcode;
+          ...
+    }
+
+    class ufo_profile {  /* Type 3 object */
+	  var $name;
+	  var $address = array();  /* Collection of Type 1 object */
+	  ...
+    }
+
+    The mapping to database tables is currently:
+
+    table ufo_address {
+      id integer auto increment,
+      uid integer,
+      street text,
+      state text,
+      zipcode text
+    }
+
+    table ufo_profile {
+      id integer auto increment,
+      uid integer,
+      name text,
+      address set(integer)
+    }
+
+    The meaning of the address column in the ufo_profile table is a reference to a set of id's of ufo_address objects.
+
+    However, with Level II, the meaning of the uid is now different.  Instead of the uid referring to the session user, the uid is the id of the containing class.
+
+    It is trivial to automate the source classes, and persistence operations
+for this type of class.  This class can be declared in a language independent way within the ufo schema with something simple like:
+
+<ufo>
+<class name="profile">
+<var>name</var>
+<collection>
+<var type="object">address</var>
+</collection>
+</class>
+</ufo>
+
+The reference tag is now gone and it is implied that the profile class is the owner of the address class collection.
+
+

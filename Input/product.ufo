@@ -1,0 +1,7 @@
+<ufo>
+<class name="product" oid="primary" container="products">
+<!-- This will generate a column in the DB -->
+<var name="name" type="string">Name</var>
+<var name="description" type="string">Description</var>
+</class>
+</ufo>

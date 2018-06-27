@@ -1,0 +1,22 @@
+<ufo>
+<class name="demo">
+<facet name="personal" storage="serial" editable="true">
+<!-- This will generate a column in the DB -->
+<collection name="work">
+<var name="address" type="string"> address </var>
+<var name="email" type="string"> email </var>
+<var name="phone" type="string"> phone </var>
+<var name="url" type="string"> url </var>
+</collection>
+</facet>	
+<facet name="contact" storage="serial" editable="true">
+<!-- This will generate a column in the DB -->
+
+</facet>	
+<facet name="professional" storage="serial" editable="true">
+<!-- This will generate a column in the DB -->
+
+</facet>	
+
+</class>
+</ufo>

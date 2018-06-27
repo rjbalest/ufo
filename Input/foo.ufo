@@ -1,0 +1,9 @@
+<ufo>
+<class name="demo">
+<!-- This will generate a column in the DB -->
+<var name="address" type="string"> address </var>
+<var name="email" type="string"> email </var>
+<var name="phone" type="string"> phone </var>
+<var name="url" type="string"> url </var>
+</class>
+</ufo>

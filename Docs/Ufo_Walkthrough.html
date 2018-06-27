@@ -1,0 +1,220 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>UfoWalkthrough</title>
+</head>
+<body>
+<h1>UFO: Walkthrough<br>
+</h1>
+<span style="font-weight: bold;">Author: Russell Balest<br>
+E-mail: russell@balest.com<br>
+Copyright (C) 2006 Russell Balest<br>
+<br>
+</span>
+<hr style="width: 100%; height: 2px;"><span style="font-weight: bold;"></span><br>
+<big><big><span style="font-weight: bold;">Forward:<br>
+</span></big></big>The following walk-through will illustrate how to
+obtain the server code framework, how to use it, and how to introduce
+new
+objects into the system.<br>
+In particular, you will declare a simple ufo class, and after
+installing it, you will be able to create objects of the new class and
+access them via URL mapping from a web browser.<br>
+<br>
+<big style="font-weight: bold;">Prerequisites:<br>
+</big>You will need the following tools installed on your system<br>
+<ul>
+  <li>Apache - version 2.0 preferably<br>
+  </li>
+  <li>PHP - version 5 preferably</li>
+  <li>Python - version 2.2 or higher</li>
+  <li>SVN&nbsp; - Subversion version control system</li>
+  <li>MySql&nbsp; or Postgres DB<br>
+  </li>
+</ul>
+<span style="font-weight: bold;"><big>Get the code</big></span>:<br>
+<br>
+For this example, we will use the Ambassador project as the starting
+point.&nbsp; Checkout the project with the svn command:<br>
+<span style="font-weight: bold;">svn checkout
+https://projects.sitepen.com/svn/ambassador_cap/trunk&nbsp;&nbsp;
+ambassador</span><br>
+<br>
+The 2nd argument will prune the full svn path and create things under
+the ambassador directory, eliminating the trunk subdirectory in this
+case.<br>
+After checkout, you will find the following directory layout beneath
+ambassador:<br>
+<br>
+<img alt="Ufo Directory Layout" title="Ufo Directory Layout"
+ src="UfoDirLayout.png" style="width: 800px; height: 389px;"><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<br>
+Refering to the diagram above, there are 2 directories beneath the
+server directory:&nbsp; <span style="font-weight: bold;">site</span>
+and <span style="font-weight: bold;">base</span>.&nbsp; In general,
+files beneath the site directory are not edited and not under source
+control.&nbsp; <span style="font-weight: bold;">site</span> is for
+local configuration settings, as set in Makefile.local and links to
+files under <span style="font-weight: bold;">base</span>.&nbsp; The
+main purpose of the site directory, aside from local configurations, is
+to support multiple sites that are variations of the same base
+code.&nbsp; This directory can be cloned if you want to support
+multiple sites.&nbsp; Why would you do this?&nbsp; You probably won't
+but you could.&nbsp; For example, you could run 2 copies of the same
+web site on your machine - one pulling data from a local database, and
+the other pulling data from a shared public database.&nbsp; Aside from
+the site specific configuration options specified in
+Makefile.local,&nbsp; the file <span style="font-weight: bold;">SiteFilter.py</span>
+( Site will replaced with a project name typically as in
+&lt;project&gt;Filter.py), is an implementation of the <a
+ href="Filter.html">Filter.Context</a> class, and supports arbitrary
+textual replacement, which is another mechanism for introducing site
+specific variations on the base code.<br>
+<br>
+<big style="font-weight: bold;">Configure and install the site<br>
+</big>
+<ol>
+  <li>From the <span style="font-weight: bold;">site</span> directory,
+run the command .<span style="font-weight: bold;">/bootstrap</span></li>
+  <li>Edit or create the file <span style="font-weight: bold;">site/Makefile.local</span></li>
+  <li><span style="font-weight: bold;"></span>Set the parameters in <span
+ style="font-weight: bold;">Makefile.local </span>to match your
+environment<br>
+  </li>
+  <li>From the site directory, run the command <span
+ style="font-weight: bold;">make db_create</span></li>
+  <li>From the site directory, run the command <span
+ style="font-weight: bold;">make install</span></li>
+  <li><span style="font-weight: bold;"></span>Test site setup by
+accessing the site with http://localhost/info.php</li>
+  <li>Access the site itself with http://localhost/main.php&nbsp; (
+this will probably be an error, but that's ok for now )<br>
+  </li>
+</ol>
+<big style="font-weight: bold;">Add a new class to the system<br>
+</big>
+<ol>
+  <li>Go to the directory <span style="font-weight: bold;">base/www/ufo</span></li>
+  <li>Edit a new file called <span style="font-weight: bold;">myclass.ufo</span></li>
+  <li>Paste or type the following code into the file:<br>
+    <br>
+    <pre>&lt;ufo&gt;</pre>
+    <pre>&lt;class name="my_foo" oid="primary" container="my_foos"&gt;</pre>
+    <pre>&lt;!-- This will generate a column in the DB --&gt;</pre>
+    <pre>&lt;var name="status" label="Status" type="int" default="0"&gt;status&lt;/var&gt;</pre>
+    <pre>&lt;/class&gt;</pre>
+    <pre>&lt;/ufo&gt;</pre>
+  </li>
+  <li>Install the new class DB table by running <span
+ style="font-weight: bold;">make db_init </span>from the <span
+ style="font-weight: bold;">server/site </span>directory</li>
+  <li>If things go wrong with the previous command, run <span
+ style="font-weight: bold;">make db_clean </span>from the <span
+ style="font-weight: bold;">server/site </span>directory</li>
+  <li>Deploy the new class code by running <span
+ style="font-weight: bold;">make install </span>from the <span
+ style="font-weight: bold;">server/site </span>directory</li>
+</ol>
+<big style="font-weight: bold;"><br>
+Access the newly created class<br>
+</big><big><small>For a full explanation of accessing object via URL
+mapping, see the URL mapping section in the <a href="UFO.html">Ufo
+Document</a>.</small><br>
+</big>For now,&nbsp; access the newly created class via its container,
+with the following URL:<br>
+<pre>http://localhost/main.php?page=my_foos</pre>
+This should generate an error.&nbsp; The reason is that this class has
+not been declared to be web accessible yet.<br>
+<br>
+You can add some auto-generated data having to do with access rights by
+running <span style="font-weight: bold;">make db_populate </span>from
+the <span style="font-weight: bold;">server/site </span>directory<br>
+<br>
+Or, the more manual way to accomplish this is:<br>
+From a mysql command line, execute the following 2 lines, which will
+create public access for the new classes:<br>
+<span style="font-family: monospace;"><br>
+</span>
+<pre>insert into ufo_pagelayout (page,body,blocks,access,redirect) values ('my_foos', 'my_foos', '', 'public', '');</pre>
+<pre>insert into ufo_pagelayout (page,body,blocks,access,redirect) values ('my_foo', 'my_foo', '', 'public', '');</pre>
+These commands make the 2 classes <span style="font-weight: bold;">my_foo</span>
+and <span style="font-weight: bold;">my_foos</span> web accessible,
+and in particular, they are <span style="font-weight: bold;">public</span>,
+which means they can be accessed without establishing a
+session.&nbsp;&nbsp; This would almost never be permissible on a live
+web site.<br>
+<br>
+At this point you should be able to access the ufo_my_foos container by
+again running:<br>
+<pre>http://localhost/main.php?page=my_foos<br></pre>
+You should be able to add my_foo objects to this container as
+well.&nbsp;&nbsp; Notice the URL as you add objects and submit
+them.&nbsp; Absent from the URL is the ufo[oid] parameter.&nbsp; If you
+view the source in the browser you will notice that ufo[oid] is being
+passed as a hidden form field in this case.<br>
+<br>
+<big style="font-weight: bold;">Add a class that contains another class<br>
+</big>In this example, things get more sophisticated.&nbsp; First we
+define a leaf class ( all members are basic types ),&nbsp; then we
+define a class that contains a reference to a leaf class.<br>
+<br>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">First
+the leaf class:</span><br>
+</div>
+<ol>
+  <li>Go to the directory <span style="font-weight: bold;">base/www/ufo</span></li>
+  <li>Edit a new file called <span style="font-weight: bold;">address.ufo</span></li>
+  <li>Paste or type the following code into the file:<br>
+    <br>
+    <pre>&lt;ufo&gt;<br>&lt;class name="address" oid="primary" container="addresses"&gt;<br>&lt;var name="street" label="Street" type="string"&gt;street&lt;/var&gt;<br>&lt;var name="city" label="City" type="string"&gt;city&lt;/var&gt;<br>&lt;var name="state" label="State" type="string"&gt;state&lt;/var&gt;<br>&lt;/class&gt;<br>&lt;/ufo&gt;</pre>
+    <span style="font-weight: bold;">Now the 2nd order class:<br>
+    <br>
+    </span></li>
+  <li>Edit a new file called <span style="font-weight: bold;">contact.ufo</span></li>
+  <li>Paste or type the following code into the file:<br>
+    <br>
+    <pre>&lt;ufo&gt;<br>&lt;import file="address.ufo"&gt;address&lt;/import&gt;<br>&lt;class name="contact" oid="primary" container="contacts"&gt;<br>&lt;var name="status" label="Status" type="int" default="0"&gt;status&lt;/var&gt;<br>&lt;!-- Reference to an address object --&gt;<br>&lt;reference&gt;<br>&lt;var name="address" label="Address" type="object" constraint="user"&gt;address&lt;/var&gt;<br>&lt;/reference&gt;<br>&lt;/class&gt;<br>&lt;/ufo&gt;<br><span
+ style="font-weight: bold;"></span></pre>
+  </li>
+  <li>Install the new class DB tables by running <span
+ style="font-weight: bold;">make db_init </span>from the <span
+ style="font-weight: bold;">server/site </span>directory</li>
+  <li>If things go wrong with the previous command, run <span
+ style="font-weight: bold;">make db_clean </span>from the <span
+ style="font-weight: bold;">server/site </span>directory</li>
+  <li>Deploy the new class code by running <span
+ style="font-weight: bold;">make install </span>from the <span
+ style="font-weight: bold;">server/site </span>directory
+    <pre><br></pre>
+    <span style="font-weight: bold;">Access the new classes:<br>
+    </span><br>
+    <ol>
+      <li>Visit the URL http://localhost/main.php?page=addresses</li>
+      <li>Create a few new address objects</li>
+      <li>Visit the URL http://localhost/main.php?page=contacts</li>
+      <li>Create a new contact object</li>
+      <ol>
+        <li>Notice that you will be able to reference an address object
+that you previously created!<br>
+        </li>
+      </ol>
+    </ol>
+  </li>
+</ol>
+<big style="font-weight: bold;"><br>
+What other object relationships can be expressed?<br>
+</big><big><small>The last example illustrates the pattern&nbsp; </small></big><span
+ style="font-family: monospace;">- </span><span
+ style="font-weight: bold;">"III: Non-Terminal Class Reference Level I</span><big>"&nbsp;
+<small>which is documented in&nbsp; <a
+ href="http://balest.com/ufo/Docs/Patterns.txt">patterns.txt</a>.<br>
+In this document, I attempt to catalog all of the common object
+relationship patterns that can be expressed in the Ufo XML schema.<br>
+</small></big><br>
+<pre><br><br><br></pre>
+</body>
+</html>

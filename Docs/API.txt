@@ -1,0 +1,45 @@
+I. URL Mapping
+--------------
+The most general form of the URL mapping is as follows:
+
+http://greenplum.com/main.php?page=<page>&obj=<obj>&method=<method>&ufo[oid]=<oid>&ufo[arg]=<arg>
+
+Where 'main.php' is the single 'driver' page that dispatches to the correct object, depending on the query string.
+
+Depending on the intent, some of the query parameters will be absent or optional.
+
+If 'page' is present, the returned value is an html page.
+If 'page' is not present, the returned value is js data.
+
+The remaining arguments map to an object model like this.  Given a class:
+
+class machine {
+
+      get memUsage(int time0, int time1);
+
+};
+
+One could call the memUsage method with a query string like this:
+
+?obj=machine&method=memUsage&ufo[oid]=2372&ufo[time1]=10223334&ufo[time2]=1022396
+
+Therefore we see that:
+
+obj : represents a class name.
+
+method : represents a method.
+
+ufo[] : is an array that represents the method arguments.
+
+ufo[oid] : is the object id, and is the implicit first argument to all instance methods, in other words 'this' or 'self'.
+
+If ufo[oid] is not present, this is equivalent to a 'static' or singleton object method.
+
+When the 'page' argument is missing, the return value from such a method invocation is some javascript data structure.
+
+If, in addition to the previous query string, the 'page' argument is also present, the meaning of this combination is to invoke the method call, and then return the named html page.
+
+
+II. Classes and methods
+-----------------------
+

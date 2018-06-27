@@ -1,0 +1,22 @@
+This test can be run from the parent directory with 'make test'
+
+Take a look at the template file Test.T and then look at the output Test.out after running 'make test'
+
+This test demonstrates 4 things:
+
+1.)  @@@ is converted to a single @ in the output.
+
+2.)  @FOO(1,2,3)@ invokes the function FOO defined in the TestContext class defined in Test.py, and returns the replacement text '@_123@'
+
+3.)  @_123@ is recursively evaluated and a definition for this tag is defined in Test.config ( an example of simple name-value replacement ), as '456'
+
+4.)  Placement of @ may be at the beginning of a line.  This is tested because the tag regular expression states that a tag must be preceded by either the beginning of a line or 2 non-@ characters.
+
+So, ultimately, the input line:
+
+'Here is the replacement text for @@@FOO(1,2,3)@@@:  @FOO(1,2,3)@'
+
+is transformed into:
+
+'Here is the replacement text for @FOO(1,2,3)@:  456'
+
